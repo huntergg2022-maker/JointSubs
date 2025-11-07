@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cumulative Sub Counter</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <h1 id="goal">Combined Subs: 0 / 200</h1>
+  <div id="bar"><div id="fill"></div></div>
+  <p id="breakdown"></p>
+</div>
+
+<script>
+const goal = 200;
+// Web App URL serving CSV
+const sheetURL = "https://script.google.com/macros/s/AKfycbz1euUOWrIjYjLk7Vz0yH2gPC4r4MRzjt21Y1dS6unIphCsDdKaCI-S_UETsB4AY00S/exec";
+
+async function update() {
+  const res = await fetch(sheetURL + "?t=" + new Date().getTime());
+  const text = await res.text();
+  const rows = text.trim().split("\n").slice(1); // skip header
+  let total = 0;
+  const breakdown = [];
+  rows.forEach(row => {
+    const [name, subs] = row.split(",");
+    const num = Number(subs);
+    total += num;
+    breakdown.push(`${name}: ${num}`);
+  });
+  document.getElementById("goal").innerText = `Combined Subs: ${total} / ${goal}`;
+  document.getElementById("fill").style.width = Math.min((total/goal)*100,100)+"%";
+  document.getElementById("breakdown").innerText = breakdown.join(" | ");
+  
+  if (total >= goal) {
+    document.getElementById("fill").classList.add("goal-met");
+  } else {
+    document.getElementById("fill").classList.remove("goal-met");
+  }
+}
+
+update();
+setInterval(update, 7000); // refresh every 7 seconds
+</script>
+</body>
+</html>
